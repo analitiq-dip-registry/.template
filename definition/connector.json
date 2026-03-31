@@ -1,9 +1,7 @@
 {
-  "connector_id": "REPLACE-WITH-UUID",
   "connector_name": "REPLACE",
   "connector_type": "api",
   "connector_descr": "REPLACE with a short description",
-  "connector_group_id": "REPLACE-WITH-UUID",
   "slug": "REPLACE",
   "base_url": "https://api.example.com/v1/",
   "client_required": false,
