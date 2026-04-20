@@ -4,7 +4,7 @@ REPLACE with a short description of what this connector does and what system it 
 
 ## What is this?
 
-This is a **connector** — a configuration that defines how to authenticate with REPLACE_SYSTEM_NAME and what data endpoints are available for reading and writing. It does not move data by itself. Instead, it is used by the [Analitiq](https://analitiq-app.com) data integration platform or the open-source `analitiq-core` engine to set up data pipelines.
+This is a **connector** — a configuration that defines how to authenticate with REPLACE_SYSTEM_NAME and what data endpoints are available for reading and writing. It does not move data by itself. Instead, it is used by the [Analitiq](https://analitiq-app.com) data integration platform or the open-source `analitiq-dip-registry` engine to set up data pipelines.
 
 ## How to use this connector
 
@@ -18,12 +18,12 @@ All connectors from this registry are automatically available on [analitiq-app.c
 
 All connectors are open source and free to use. To get started:
 
-1. Clone the [analitiq-core](https://github.com/analitiq-core) repository
+1. Clone the [analitiq-dip-registry](https://github.com/analitiq-dip-registry) repository
 2. Install the Claude plugin `analitiq-plugin-dataflow`
-3. Launch Claude in the root directory of `analitiq-core`
+3. Launch Claude in the root directory of `analitiq-dip-registry`
 4. Tell it: *"I need to move data from X to Y"*
 
-The `analitiq-plugin-dataflow` plugin will automatically fetch the required connectors from the [Analitiq Skill Registry](https://github.com/analitiq-skill-registry) and set up the data flow pipeline for you.
+The `analitiq-plugin-dataflow` plugin will automatically fetch the required connectors from the [Analitiq DIP Registry](https://github.com/analitiq-dip-registry) and set up the data flow pipeline for you.
 
 ## Prerequisites
 
@@ -72,7 +72,7 @@ You can create a new connector to any API or database using Claude and the Anali
 1. Install [Claude Code](https://claude.ai/code)
 2. Install the connector builder plugin:
    ```
-   claude plugin add analitiq-skill-registry/analitiq-plugin-connector-builder
+   claude plugin add analitiq-dip-registry/analitiq-plugin-connector-builder
    ```
 3. Launch Claude and say: *"I want to create a connector for [system name]"*
 4. The plugin will interview you about the system, research its API documentation, and generate the full connector with all required files
@@ -83,10 +83,11 @@ No coding required — the plugin handles authentication research, endpoint sche
 
 ## Contributing
 
-All connectors in this registry are community-maintained and live at [github.com/analitiq-skill-registry](https://github.com/analitiq-skill-registry). To add new endpoints or improve an existing connector, install the [connector builder plugin](https://github.com/analitiq-skill-registry/analitiq-plugin-connector-builder) and follow its instructions.
+All connectors in this registry are community-maintained and live at [github.com/analitiq-dip-registry](https://github.com/analitiq-dip-registry). To add new endpoints or improve an existing connector, install the [connector builder plugin](https://github.com/analitiq-dip-registry/analitiq-plugin-connector-builder) and follow its instructions.
 
 ## Links
 
 - [API Documentation](REPLACE with URL)
 - [Analitiq Cloud](https://analitiq-app.com)
-- [Analitiq Core (open source)](https://github.com/analitiq-core)
+- [Analitiq Engine (open source)](https://github.com/analitiq-ai/analitiq-engine)
+- [Analitiq DIP Registry (open source)](https://github.com/analitiq-dip-registry)
