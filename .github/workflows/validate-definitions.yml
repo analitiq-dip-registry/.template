@@ -11,17 +11,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install check-jsonschema
-        run: pip install check-jsonschema
+        run: pip install 'check-jsonschema==0.29.4'
 
       - name: Validate connector.json
         run: |
+          set -eo pipefail
           check-jsonschema \
             --schemafile https://schemas.analitiq.ai/connector/latest.json \
             definition/connector.json
 
       - name: Validate endpoints
         run: |
+          set -eo pipefail
+
+          if [ ! -d definition/endpoints ]; then
+            echo "ERROR: definition/endpoints/ directory is missing."
+            exit 1
+          fi
+
           mapfile -t ENDPOINTS < <(find definition/endpoints -name "*.json" -type f)
 
           if [ "${#ENDPOINTS[@]}" -eq 0 ]; then
@@ -30,6 +42,11 @@ jobs:
           fi
 
           CONNECTOR_TYPE=$(jq -r '.connector_type' definition/connector.json)
+          if [ -z "$CONNECTOR_TYPE" ] || [ "$CONNECTOR_TYPE" = "null" ]; then
+            echo "ERROR: .connector_type is missing or null in definition/connector.json"
+            exit 1
+          fi
+
           case "$CONNECTOR_TYPE" in
             api)      TYPE_SCHEMA="https://schemas.analitiq.ai/api-endpoint/latest.json" ;;
             database) TYPE_SCHEMA="https://schemas.analitiq.ai/database-endpoint/latest.json" ;;

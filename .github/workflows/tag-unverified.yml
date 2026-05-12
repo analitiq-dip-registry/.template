@@ -7,8 +7,6 @@ on:
 jobs:
   init-repo:
     runs-on: ubuntu-latest
-    # Only run once — when the repo has just 1 commit
-    if: github.run_number == 1
     steps:
       - name: Enable discussions
         uses: actions/github-script@v7
@@ -25,6 +23,23 @@ jobs:
           github-token: ${{ secrets.ADMIN_PAT }}
           script: |
             const { owner, repo } = context.repo;
+
+            // Idempotency: skip if already enforced
+            let existingChecks = [];
+            try {
+              const { data: existing } = await github.rest.repos.getBranchProtection({
+                owner, repo, branch: 'main',
+              });
+              existingChecks = existing?.required_status_checks?.checks ?? [];
+            } catch (e) {
+              if (e.status !== 404) throw e;
+            }
+
+            if (existingChecks.some(c => c.context === 'validate')) {
+              console.log('Branch protection already enforces validate check — nothing to do.');
+              return;
+            }
+
             await github.rest.repos.updateBranchProtection({
               owner,
               repo,
@@ -37,4 +52,19 @@ jobs:
               required_pull_request_reviews: null,
               restrictions: null,
             });
-            console.log('Branch protection: validate check required on main');
+
+            // Verify the protection was actually applied
+            const { data: protection } = await github.rest.repos.getBranchProtection({
+              owner, repo, branch: 'main',
+            });
+            const applied = (protection?.required_status_checks?.checks ?? [])
+              .some(c => c.context === 'validate');
+            if (!applied) {
+              throw new Error(
+                "updateBranchProtection succeeded but 'validate' is not present in the " +
+                "enforced checks. The check may not have run on this repo yet — open a PR " +
+                "to register the check context, then re-run this workflow step."
+              );
+            }
+
+            console.log('Branch protection set: validate check required on main');
