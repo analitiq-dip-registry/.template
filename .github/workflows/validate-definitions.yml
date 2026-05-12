@@ -5,6 +5,8 @@ on:
     branches: [main]
 
 jobs:
+  # NOTE: the job id 'validate' is referenced by the branch protection rule written in
+  # tag-unverified.yml (context: 'validate'). Renaming this job breaks enforcement.
   validate:
     runs-on: ubuntu-latest
 
@@ -20,21 +22,25 @@ jobs:
 
       - name: Validate connector.json
         run: |
-          set -eo pipefail
+          set -euo pipefail
+          if [ ! -f definition/connector.json ]; then
+            echo "ERROR: definition/connector.json is missing."
+            exit 1
+          fi
           check-jsonschema \
             --schemafile https://schemas.analitiq.ai/connector/latest.json \
             definition/connector.json
 
       - name: Validate endpoints
         run: |
-          set -eo pipefail
+          set -euo pipefail
 
           if [ ! -d definition/endpoints ]; then
             echo "ERROR: definition/endpoints/ directory is missing."
             exit 1
           fi
 
-          mapfile -t ENDPOINTS < <(find definition/endpoints -name "*.json" -type f)
+          mapfile -d '' -t ENDPOINTS < <(find definition/endpoints -name "*.json" -type f -print0)
 
           if [ "${#ENDPOINTS[@]}" -eq 0 ]; then
             echo "No endpoint files found — skipping."
