@@ -1,30 +1,43 @@
 {
-  "connector_name": "REPLACE",
-  "connector_type": "api",
-  "connector_descr": "REPLACE with a short description",
-  "slug": "REPLACE",
-  "base_url": "https://api.example.com/v1/",
-  "client_required": false,
+  "$schema": "https://schemas.analitiq.ai/connector/latest.json",
+  "kind": "api",
+  "display_name": "REPLACE",
+  "description": "REPLACE with a short description",
+  "version": "1.0.0",
+  "default_transport": "api",
+  "transports": {
+    "api": {
+      "transport_type": "http",
+      "base_url": "https://api.example.com/v1/",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": { "template": "Bearer ${secrets.api_key}" }
+      },
+      "timeout_seconds": 30,
+      "rate_limit": {
+        "max_requests": 60,
+        "time_window_seconds": 60
+      }
+    }
+  },
   "auth": {
     "type": "api_key"
   },
-  "headers": {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-    "Authorization": "Bearer ${api_key}"
-  },
-  "form_fields": [
-    {
-      "name": "api_key",
-      "label": "API Key",
-      "type": "password",
-      "required": true,
-      "secret": true
+  "connection_contract": {
+    "inputs": {
+      "api_key": {
+        "source": "user",
+        "phase": "pre_auth",
+        "storage": "secrets",
+        "type": "string",
+        "required": true,
+        "secret": true,
+        "ui": {
+          "label": "API Key",
+          "widget": "password"
+        }
+      }
     }
-  ],
-  "timeout": 30,
-  "requests_per_second": {
-    "max_requests": 60,
-    "time_window_seconds": 60
   }
 }
