@@ -39,7 +39,14 @@ jobs:
           BUMP_TYPE="${{ steps.bump.outputs.type }}"
           CONNECTOR="definition/connector.json"
 
-          CURRENT=$(jq -r '.version' "$CONNECTOR")
+          CURRENT=$(jq -er '.version' "$CONNECTOR") || {
+            echo "::error file=$CONNECTOR::missing or null '.version' in $CONNECTOR" >&2
+            exit 1
+          }
+          if [[ ! "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error file=$CONNECTOR::'.version' is '$CURRENT', expected X.Y.Z" >&2
+            exit 1
+          fi
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
           case "$BUMP_TYPE" in
