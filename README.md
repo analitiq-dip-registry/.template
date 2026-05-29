@@ -1,5 +1,9 @@
 # REPLACE_CONNECTOR_NAME
 
+[![Status: unverified](https://img.shields.io/badge/status-unverified-orange)](https://github.com/analitiq-dip-registry)
+[![Latest release](https://img.shields.io/github/v/release/analitiq-dip-registry/REPLACE_REPO_NAME)](https://github.com/analitiq-dip-registry/REPLACE_REPO_NAME/releases)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
+
 REPLACE with a short description of what this connector does and what system it integrates with.
 
 ## What is this?
