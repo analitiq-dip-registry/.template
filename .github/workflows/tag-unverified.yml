@@ -7,6 +7,10 @@ on:
 jobs:
   init-repo:
     runs-on: ubuntu-latest
+    # Never run on the template repo itself — only on repos generated from it.
+    # The template keeps its REPLACE_REPO_NAME placeholder so generated repos inherit it;
+    # running the README fixup here would clobber that placeholder.
+    if: ${{ github.event.repository.is_template == false }}
     # contents: write is for the README badge fixup step below, which commits with the
     # default GITHUB_TOKEN (whose pushes do NOT retrigger workflows — avoids a loop).
     permissions:
