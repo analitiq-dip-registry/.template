@@ -10,7 +10,14 @@ jobs:
     # Never run on the template repo itself — only on repos generated from it.
     # The template keeps its REPLACE_REPO_NAME placeholder so generated repos inherit it;
     # running the README fixup here would clobber that placeholder.
-    if: ${{ github.event.repository.is_template == false }}
+    #
+    # has_discussions is the init-completion marker: 'Enable discussions' runs LAST below,
+    # so it only flips to true once every other init step has succeeded. After that, this
+    # job skips entirely on routine pushes to main (version bumps, README edits) instead of
+    # re-running init steps on every push. While init is incomplete (e.g. a partial failure),
+    # the job keeps retrying on each push and self-heals — every step is idempotent.
+    # The check reads the push event payload, so skipping costs no API calls and no PAT.
+    if: ${{ github.event.repository.is_template == false && github.event.repository.has_discussions == false }}
     # contents: write is for the README badge fixup step below, which commits with the
     # default GITHUB_TOKEN (whose pushes do NOT retrigger workflows — avoids a loop).
     permissions:
@@ -52,15 +59,6 @@ jobs:
               await github.rest.repos.replaceAllTopics({ owner, repo, names: topics });
             }
             console.log(`Topics set to: ${topics.join(', ')}`);
-
-      - name: Enable discussions
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.ADMIN_PAT }}
-          script: |
-            const { owner, repo } = context.repo;
-            await github.rest.repos.update({ owner, repo, has_discussions: true });
-            console.log('Discussions enabled');
 
       - name: Require validate check on main
         uses: actions/github-script@v7
@@ -144,3 +142,15 @@ jobs:
                 `The protection rule is likely active — verify manually if needed.`
               );
             }
+
+      # Runs LAST on purpose: has_discussions doubles as the init-completion marker for the
+      # job-level guard above. Enabling discussions only after every other step has succeeded
+      # guarantees a partially-initialized repo keeps retrying on the next push to main.
+      - name: Enable discussions
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ADMIN_PAT }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.update({ owner, repo, has_discussions: true });
+            console.log('Discussions enabled — repo initialization complete');
