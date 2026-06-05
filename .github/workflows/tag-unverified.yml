@@ -12,19 +12,24 @@ jobs:
     # running the README fixup here would clobber that placeholder.
     #
     # has_discussions is the init-completion marker: 'Enable discussions' runs LAST below,
-    # so it only flips to true once every other init step has succeeded. After that, this
-    # job skips entirely on routine pushes to main (version bumps, README edits) instead of
-    # re-running init steps on every push. While init is incomplete (e.g. a partial failure),
-    # the job keeps retrying on each push and self-heals — every step is idempotent.
-    # The check reads the push event payload, so skipping costs no API calls and no PAT.
+    # so under normal operation it only flips to true once every other init step has
+    # succeeded. After that, this job skips entirely on routine pushes to main (version
+    # bumps, README edits). While init is incomplete the job retries on each push to main —
+    # the badge, topic, and protection steps each check current state before writing, so
+    # re-runs are safe. The guard is evaluated from the push event payload, so the skip
+    # path costs no API calls and no PAT.
+    # Caveats: the marker is the repo's discussions setting, which admins can also toggle.
+    # Enabling discussions out of band before init finishes stops the retries (finish init
+    # manually if that happens); disabling discussions later makes the next push to main
+    # re-run init, which re-enables them.
     if: ${{ github.event.repository.is_template == false && github.event.repository.has_discussions == false }}
     # contents: write is for the README badge fixup step below, which commits with the
     # default GITHUB_TOKEN (whose pushes do NOT retrigger workflows — avoids a loop).
     permissions:
       contents: write
     steps:
-      # Runs FIRST, before branch protection is set below, so the direct push to main
-      # is not blocked by the 'validate' required check.
+      # Runs FIRST, before the 'Require validate check on main' step sets branch
+      # protection, so the direct push to main is not blocked by the 'validate' check.
       - name: Fill release badge with repo name
         uses: actions/github-script@v7
         with:
@@ -143,9 +148,8 @@ jobs:
               );
             }
 
-      # Runs LAST on purpose: has_discussions doubles as the init-completion marker for the
-      # job-level guard above. Enabling discussions only after every other step has succeeded
-      # guarantees a partially-initialized repo keeps retrying on the next push to main.
+      # Runs LAST on purpose — has_discussions is the init-completion marker; see the
+      # job-level guard comment above.
       - name: Enable discussions
         uses: actions/github-script@v7
         with:
