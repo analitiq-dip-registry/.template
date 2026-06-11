@@ -23,16 +23,21 @@ jobs:
     # manually if that happens); disabling discussions later makes the next push to main
     # re-run init, which re-enables them.
     if: ${{ github.event.repository.is_template == false && github.event.repository.has_discussions == false }}
-    # contents: write is for the README badge fixup step below, which commits with the
-    # default GITHUB_TOKEN (whose pushes do NOT retrigger workflows — avoids a loop).
-    permissions:
-      contents: write
+    # All steps authenticate with ADMIN_PAT; the default GITHUB_TOKEN is not used.
+    permissions: {}
     steps:
       # Branch protection is no longer set here — the org rulesets 'Protect main branch'
       # and 'Require validate check on main' cover all generated repos.
+      #
+      # This step commits with ADMIN_PAT (an org-admin token) because the org ruleset
+      # 'Protect main branch' rejects direct pushes to main from GITHUB_TOKEN; org admins
+      # are bypass actors. Unlike GITHUB_TOKEN, an ADMIN_PAT push DOES retrigger this
+      # workflow — that rerun is a harmless no-op (the placeholder is gone, so no commit
+      # is made and the loop stops there).
       - name: Fill release badge with repo name
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.ADMIN_PAT }}
           script: |
             const { owner, repo } = context.repo;
             const path = 'README.md';
