@@ -1,6 +1,7 @@
 {
   "$schema": "https://schemas.analitiq.ai/connector/latest.json",
   "kind": "api",
+  "connector_id": "replace-me",
   "display_name": "REPLACE",
   "description": "REPLACE with a short description",
   "version": "0.0.0",
